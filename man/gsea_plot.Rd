@@ -4,7 +4,7 @@
 \alias{gsea_plot}
 \title{Plot GSEA Enrichment Score}
 \usage{
-gsea_plot(gsea_res, set_names, show_table = FALSE)
+gsea_plot(gsea_res, set_names = gsea_res[["pathway"]], show_table = FALSE)
 }
 \arguments{
 \item{gsea_res}{A result object from \code{run_microbiome_gsea}. It should be a

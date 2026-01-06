@@ -20,7 +20,7 @@
 #' gsea_res = run_microbiome_gsea(ps_test_data, "Genus1", "Genus", c("Group","Source"))
 #' gsea_plot(gsea_res, "Group_Treat")
 #' }
-gsea_plot = function(gsea_res, set_names, show_table = FALSE){
+gsea_plot = function(gsea_res, set_names = gsea_res[['pathway']], show_table = FALSE){
     sample_sets = attr(gsea_res, "sampleSets")
     sample_ranks = attr(gsea_res, "sampleRanks")
 
@@ -66,11 +66,90 @@ gsea_plot = function(gsea_res, set_names, show_table = FALSE){
 
 }
 
-theme_gsea = function(){
-    ggplot2::theme_bw() +
-        ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-              axis.ticks.x = ggplot2::element_blank(),
-              axis.title.x = ggplot2::element_blank())
+#' Plot GSEA Enrichment Score Barcodes for Multiple Sets
+#'
+#' This function generates barcode plots for multiple GSEA pathways, displaying the enrichment score ticks
+#' along with pathway names and statistics (size, NES, adjusted p-value).
+#'
+#' @param gsea_res A result object from `run_microbiome_gsea`. It should be a
+#'  data frame with "sampleSets" and "sampleRanks" attributes.
+#' @param set_names A character vector The names of the sets (pathways) to plot.
+#'
+#' @return A ggplot object (combined barcode plots for the specified pathways).
+#'
+#' @export
+#' @examples
+#'  \dontrun{
+#'  gsea_res = run_microbiome_gsea(ps_test_data, "Genus1", "Genus", c("Group","Source"))
+#'  gsea_plot_barcode(gsea_res)
+#'
+gsea_plot_barcode = function(
+    gsea_res,
+    set_names = gsea_res[['pathway']]){
+
+  ticks_data = get_ticks_data(gsea_res, set_names)
+
+  plots = lapply(set_names, function(x){
+    current_stat = gsea_res[gsea_res$pathway == x, ] |>
+      dplyr::mutate(
+        padj = format(.data[['padj']], scientific = TRUE, digits = 2),
+        NES = format(.data[['NES']], digits = 3)
+      )
+    current_tick <- ticks_data[ticks_data$set_name == x, ]
+    p_name = ggplot2::ggplot() +
+      ggplot2::annotate("text", x = 0, y = 0, label = x, fontface = "bold") +
+      ggplot2::theme_void()
+    p_barcode = tick_plot(current_tick) +
+      ggplot2::theme(
+        axis.title.y = ggplot2::element_blank(),
+      )
+    p_table = do.call(header_plot, list(x = unlist(current_stat[, c("size","NES","padj")]))) |>
+      Reduce(f = aplot::insert_right) |>
+      aplot::as.patchwork()
+
+    p_barcode |>
+      aplot::insert_left(p_name) |>
+      aplot::insert_right(p_table) |>
+      aplot::as.patchwork()
+  })
+
+  plot_rows = patchwork::wrap_plots(plots, ncol = 1)
+
+  return(plot_rows)
+}
+
+header_plot = function(x, widths = nchar(x)){
+  if (length(x) > 0) {
+    plots = lapply(x, function(t){
+      ggplot2::ggplot() +
+        ggplot2::annotate("text", x = 1, y = 0, label = t, fontface = "bold") +
+        ggplot2::theme_void()
+    })
+  }
+  return(plots)
+}
+
+table_plot = function(stat_data, columns = c("size","NES","padj")){
+  stat_data = stat_data |>
+    dplyr::select(dplyr::all_of(columns)) |>
+    dplyr::mutate(
+      padj = format(.data[['padj']], scientific = TRUE, digits = 2),
+      NES = format(.data[['NES']], digits = 3)
+    ) |>
+    dplyr::mutate_all(as.character) |>
+    tidyr::pivot_longer(names_to = "col_name", values_to = "text", cols = dplyr::everything())
+
+  ggplot2::ggplot(stat_data, ggplot2::aes(x = .data[['col_name']], y = 0)) +
+    ggplot2::geom_text(ggplot2::aes(label = .data[['text']]), size = 4, fontface = "bold") +
+    ggplot2::theme_void() +
+    ggplot2::coord_cartesian(clip = "off")
+}
+
+tick_plot = function(tick_data){
+  ggplot2::ggplot(tick_data, ggplot2::aes(.data[['rank']], .data[['stat']]/2)) +
+    ggplot2::geom_tile(ggplot2::aes(height = .data[["stat"]]), width = 0.2, show.legend = FALSE) +
+    ggplot2::geom_hline(yintercept = 0, color = "grey", linewidth = 0.2) +
+    ggplot2::theme_void()
 }
 
 ggGseaTable = function(gsea_res, set_names){
