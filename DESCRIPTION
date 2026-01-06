@@ -1,6 +1,6 @@
 Package: cailab.amplicon
 Title: Amplicon Sequencing Data Utilities
-Version: 0.1.4
+Version: 0.1.5
 Authors@R: 
     person("Chun-Hui", "Gao", , "gaospecial@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-1445-7939"))

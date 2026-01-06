@@ -43,7 +43,8 @@ gsea_plot = function(gsea_res, set_names = NULL, show_table = FALSE){
         ggplot2::labs(x = "Rank in ordered samples", y = NULL) +
         ggplot2::theme_bw() +
         ggplot2::theme(axis.text.x = ggplot2::element_blank(),
-                       axis.ticks.x = ggplot2::element_blank())
+                       axis.ticks.x = ggplot2::element_blank()) +
+      ggplot2::scale_y_discrete(limits = rev(set_names))
 
     extra_data = gsea_res |>
         dplyr::select(dplyr::all_of(c('pathway','padj','NES'))) |>
