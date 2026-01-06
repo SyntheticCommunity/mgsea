@@ -4,7 +4,7 @@
 \alias{get_sorted_abundance_vector}
 \title{获取排序后的标准化丰度向量}
 \usage{
-get_sorted_abundance_vector(ps, target_taxon, tax_rank)
+get_sorted_abundance_vector(ps, target_taxon, tax_rank, decreasing = TRUE)
 }
 \arguments{
 \item{ps}{A \code{phyloseq} object.}
@@ -12,6 +12,8 @@ get_sorted_abundance_vector(ps, target_taxon, tax_rank)
 \item{target_taxon}{A character string. The name of the taxon to analyze (e.g., "Bacteroides").}
 
 \item{tax_rank}{A character string. The taxonomic rank to verify \code{target_taxon} (e.g., "Genus").}
+
+\item{decreasing}{Logical. Whether to sort in decreasing order. Default is TRUE.}
 }
 \value{
 A named numeric vector. Names are sample IDs, values are Z-score normalized abundances, sorted decreasingly.

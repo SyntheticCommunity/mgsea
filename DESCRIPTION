@@ -11,15 +11,19 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: 
+    aplot,
     cowplot,
     dplyr,
     fgsea,
     ggplot2,
+    ggpubr,
     magrittr,
+    patchwork,
     phyloseq,
     rlang,
     stats,
-    tibble
+    tibble,
+    tidyr
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
