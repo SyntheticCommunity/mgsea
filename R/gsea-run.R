@@ -67,7 +67,6 @@ run_microbiome_gsea <- function(ps, taxon_target, taxon_rank, sample_feat,
   # 转换为 tibble 并按 NES (Normalized Enrichment Score) 绝对值或数值排序
   # 这里按 NES 降序排列 (正富集在前，负富集在后)
   gsea_res <- gsea_res %>%
-      dplyr::arrange(dplyr::desc(.data$NES)) %>%
       tibble::as_tibble()
 
   # 5. 添加属性以便后续绘图
