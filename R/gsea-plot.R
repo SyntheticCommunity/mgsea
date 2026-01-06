@@ -20,15 +20,16 @@
 #' gsea_res = run_microbiome_gsea(ps_test_data, "Genus1", "Genus", c("Group","Source"))
 #' gsea_plot(gsea_res, "Group_Treat")
 #' }
-gsea_plot = function(gsea_res, set_names = gsea_res[['pathway']], show_table = FALSE){
-    sample_sets = attr(gsea_res, "sampleSets")
-    sample_ranks = attr(gsea_res, "sampleRanks")
+gsea_plot = function(gsea_res, set_names = NULL, show_table = FALSE){
+    if (is.null(set_names)) {
+      set_names <- if(is.factor(gsea_res$pathway)) levels(gsea_res$pathway) else gsea_res$pathway
+    }
 
     curve_data = get_curve_data(gsea_res, set_names)
     ticks_data = get_ticks_data(gsea_res, set_names)
 
     curve_plot = ggplot2::ggplot(curve_data, ggplot2::aes(.data[['rank']], .data[['ES']], color = .data[['set_name']])) +
-        ggplot2::geom_line(size = 1) +
+        ggplot2::geom_line(linewidth = 1) +
         ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
         ggplot2::labs(y = "Enrichment\nscore") +
         ggplot2::theme_bw() +
@@ -152,36 +153,6 @@ tick_plot = function(tick_data){
     ggplot2::theme_void()
 }
 
-ggGseaTable = function(gsea_res, set_names){
-    ## 测试代码
-
-    # 假设这是你的 GSEA 简表
-    my_stats <- data.frame(
-        Pathway = c("Cell Cycle", "Glycolysis", "Hypoxia"),
-        NES = c(2.1, -1.8, 1.5),
-        P_val = c("0.001", "0.02", "0.06")
-    ) |>
-        dplyr::mutate(row = dplyr::row_number()) |>
-        dplyr::mutate_all(as.character) |>
-        tidyr::pivot_longer(cols = -row, names_to = "col_name", values_to = "text")
-
-    # 核心技巧：映射颜色
-    p_table <- my_stats %>%
-        dplyr::mutate(row_id = rev(dplyr::row_number()),
-               sig_color = ifelse(as.numeric(.data[["NES"]]) > 0, "#E41A1C", "#377EB8")) %>%
-        dplyr::mutate(dplyr::across(dplyr::everything(), as.character)) |>
-        tidyr::pivot_longer(cols = c("Pathway", "NES", "P_val"), names_to = "col_name", values_to = "val") %>%
-        dplyr::mutate(col_name = factor(.data[["col_name"]], levels = c("Pathway", "NES", "P_val"))) %>%
-        ggplot2::ggplot(ggplot2::aes(x = .data[["col_name"]], y = .data[["row_id"]])) +
-        ggplot2::geom_text(ggplot2::aes(label = .data[["val"]], color = .data[['sig_color']]), size = 4, fontface = "bold") +
-        ggplot2::scale_color_identity() +
-        ggplot2::annotate("text", x = 1:3, y = nrow(my_stats) + 0.8,
-                 label = c("Pathway", "NES", "P-val"), fontface = "bold") +
-        ggplot2::theme_void() +
-        ggplot2::coord_cartesian(clip = "off")
-}
-
-
 get_curve_data = function(gsea_res, set_names){
   get_data(gsea_res, set_names, type = "curve")
 }
@@ -198,9 +169,10 @@ get_data = function(gsea_res, set_names, type = c("curve", "ticks")){
     names(data_all) = set_names
 
     data = lapply(data_all, function(x) x[[type]]) |>
-        dplyr::bind_rows(.id = "set_name")
+      dplyr::bind_rows(.id = "set_name")
 
-    return(data)
+    data |> dplyr::mutate(set_name = factor(.data[['set_name']], levels = set_names))
+
 }
 
 
