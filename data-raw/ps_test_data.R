@@ -10,13 +10,13 @@ set.seed(2023)
 
 # 2. 定义维度
 n_samples <- 50
-n_taxa <- 10
+n_taxa <- 9
 
 # 3. 模拟 OTU 表 (Taxa x Samples)
 # 随机生成 0-100 的计数值
-otu_mat <- matrix(sample(0:100, n_samples * n_taxa, replace = TRUE), nrow = n_taxa)
-rownames(otu_mat) <- paste0("OTU", 1:n_taxa)
-colnames(otu_mat) <- paste0("Sample", 1:n_samples)
+otu_mat <- matrix(sample(0:99, n_samples * n_taxa, replace = TRUE), nrow = n_taxa)
+rownames(otu_mat) <- paste0("OTU", sprintf("%01s", 1:n_taxa))
+colnames(otu_mat) <- paste0("Sample", sprintf("%02s", 1:n_samples))
 
 # 4. 模拟分类表 (Taxonomy Table)
 # 这里简单地将 OTU 映射到 Genus，每个 OTU 对应一个唯一的 Genus
@@ -36,7 +36,7 @@ meta_df <- data.frame(
 # 让 Genus1 (对应 OTU1) 在 "Treat" 组 (后25个样本) 丰度显著更高
 # 这样在测试 GSEA 时，我们预期 "Group_Treat" 会显著富集
 grp_treat = meta_df$Group == "Treat"
-otu_mat[1, grp_treat] <- otu_mat[1, grp_treat] + runif(sum(grp_treat), 20, 50)
+otu_mat[1, grp_treat] <- otu_mat[1, grp_treat] + round(runif(sum(grp_treat), 30, 50))
 
 # 7. 构建 phyloseq 对象
 ps_test_data <- phyloseq(

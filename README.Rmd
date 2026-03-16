@@ -1,0 +1,154 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# Microbiome Genus Set Enrichment Analysis (mgsea)
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of `mgsea` is to enable Genus Set Enrichment Analysis (GSEA)[^1] for microbiome data, allowing researchers to identify associations between microbial taxa and sample metadata features. This package provides a streamlined workflow for performing GSEA on microbiome datasets, leveraging the `phyloseq` object structure and the `fgsea` algorithm.
+
+[^1]: Honestly, GSEA is a computational method that determines whether a predefined set of genes (or in this case, samples) shows statistically significant, concordant differences between two biological states. In the context of microbiome data, we adapt this concept to analyze whether certain sample groups are enriched in samples with high or low abundance of a target taxon.
+
+## Installation
+
+You can install the development version of `mgsea` from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("SyntheticCommunity/mgsea")
+```
+
+## Example Dataset
+
+This is a basic example which shows you how to use this package:
+
+```r
+library(mgsea)
+```
+
+Initialize a test `phyloseq` object:
+
+```{r}
+#| include: false
+if (Sys.getenv("HOME") == "/Users/gaoch") {
+  devtools::load_all()
+}
+```
+
+
+```{r}
+library(phyloseq)
+ps = ps_test_data
+ps
+```
+
+Check `ps` is correctly loaded:
+
+1. OTU table
+
+    ```{r}
+    otu_table(ps)
+    ```
+
+2. Taxonomy table
+
+    ```{r}
+    tax_table(ps)
+    ```
+
+3. Sample data
+
+    ```{r}
+    sample_data(ps)
+    ```
+
+
+## Overview
+
+We can now visualize the abundance of all genera across samples:
+
+```{r}
+library(ggplot2)
+ps_genus = tax_glom(ps, "Genus")
+ps_genus = transform_sample_counts(ps_genus, function(x) x / sum(x))
+plot_bar(ps_genus, fill = "Genus") +
+    scale_y_continuous(labels = scales::percent_format())
+```
+
+```{r}
+library(dplyr)
+
+ps_data = psmelt(ps_genus)
+
+sample_order_by_genus1 = ps_data |> 
+    filter(Genus == "Genus1") |> 
+    arrange(desc(Abundance)) |>
+    pull(Sample)
+
+ps_sorted = ps_data |> 
+    mutate(Sample = factor(Sample, levels = sample_order_by_genus1))
+
+ggplot(ps_sorted, aes(x = Sample, y = Abundance, fill = Genus)) +
+    geom_bar(stat = "identity") +
+    scale_y_continuous(labels = scales::percent_format()) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+When we plot the abundance of "Genus1" across samples, we can see that it is more abundant in "Treat" group than "Ctrl" group:
+
+```{r}
+ps_genus1 = subset_taxa(ps_genus, Genus == "Genus1")
+ps_data = psmelt(ps_genus1)
+
+p_value = wilcox.test(Abundance ~ Group, data = ps_data)$p.value
+
+ggplot(ps_data, aes(x = Group, y = Abundance)) +
+    geom_boxplot() +
+    geom_jitter(width = 0.2) +
+    scale_y_continuous(labels = scales::percent_format()) +
+    annotate("text", x = 1.5, y = max(ps_data$Abundance), label = paste0("p = ", signif(p_value, 2))) 
+```
+
+
+## Run Analysis
+
+Run GSEA analysis:
+
+```{r}
+gsea_res <- run_microbiome_gsea(
+    ps = ps,
+    taxon_target = "Genus1",
+    taxon_rank = "Genus",
+    sample_feat = "Group"
+)
+
+gsea_res
+```
+
+## Visualization
+
+Plot a single GSEA curve:
+
+```{r}
+gsea_plot(gsea_res, "Group_Treat")
+```
+
+Plot Curves for all significant sets:
+
+```{r}
+gsea_plot_all(gsea_res, filter = FALSE, ncol = 1)
+```
