@@ -1,11 +1,10 @@
-Package: cailab.amplicon
-Title: Amplicon Sequencing Data Utilities
+Package: mgsea
+Title: Perform Microbiome Genus Set Enrichment Analysis
 Version: 0.1.5
 Authors@R: 
     person("Chun-Hui", "Gao", , "gaospecial@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-1445-7939"))
-Description: Preprocessing, filtering, and visualization tools for 16S/ITS
-    amplicon data.
+Description: Microbiome Genus Set Enrichment Analysis implements GSEA with microbiome data.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
