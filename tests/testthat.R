@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(cailab.amplicon)
+library(mgsea)
 
-test_check("cailab.amplicon")
+test_check("mgsea")

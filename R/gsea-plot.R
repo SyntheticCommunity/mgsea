@@ -13,13 +13,13 @@
 #'
 #' @importFrom fgsea plotEnrichment
 #' @importFrom ggplot2 labs
-#' @importFrom patchwork | +
-#' @export
+#' @import patchwork
 #' @examples
 #' \dontrun{
-#' gsea_res = run_microbiome_gsea(ps_test_data, "Genus1", "Genus", c("Group","Source"))
-#' gsea_plot(gsea_res, "Group_Treat")
+#'   gsea_res <- run_microbiome_gsea(ps_test_data, "Genus1", "Genus", c("Group","Source"))
+#'   gsea_plot(gsea_res, "Group_Treat")
 #' }
+#' @export
 gsea_plot = function(gsea_res, set_names = NULL, show_table = FALSE){
     if (is.null(set_names)) {
       set_names <- if(is.factor(gsea_res$pathway)) levels(gsea_res$pathway) else gsea_res$pathway
@@ -84,7 +84,7 @@ gsea_plot = function(gsea_res, set_names = NULL, show_table = FALSE){
 #'  \dontrun{
 #'  gsea_res = run_microbiome_gsea(ps_test_data, "Genus1", "Genus", c("Group","Source"))
 #'  gsea_plot_barcode(gsea_res)
-#'
+#'}
 gsea_plot_barcode = function(
     gsea_res,
     set_names = gsea_res[['pathway']]){

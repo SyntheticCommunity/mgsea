@@ -4,7 +4,7 @@
 \alias{gsea_plot}
 \title{Plot GSEA Enrichment Score}
 \usage{
-gsea_plot(gsea_res, set_names = gsea_res[["pathway"]], show_table = FALSE)
+gsea_plot(gsea_res, set_names = NULL, show_table = FALSE)
 }
 \arguments{
 \item{gsea_res}{A result object from \code{run_microbiome_gsea}. It should be a
@@ -23,7 +23,7 @@ using the results from \code{run_microbiome_gsea}.
 }
 \examples{
 \dontrun{
-gsea_res = run_microbiome_gsea(ps_test_data, "Genus1", "Genus", c("Group","Source"))
-gsea_plot(gsea_res, "Group_Treat")
+  gsea_res = run_microbiome_gsea(ps_test_data, "Genus1", "Genus", c("Group","Source"))
+  gsea_plot(gsea_res, "Group_Treat")
 }
 }
